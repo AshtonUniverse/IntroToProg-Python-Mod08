@@ -1,5 +1,0 @@
-Microwave,500.0
-Oven,2000.0
-Toaster,200.0
-Refrigerator,4000.0
-Dishwasher,1000.0
