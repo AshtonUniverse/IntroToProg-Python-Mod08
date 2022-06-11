@@ -9,7 +9,9 @@
 
 # Data -------------------------------------------------------------------- #
 strFileName = 'Products.txt'
-lstOfProductObjects = []  # A list that acts as a 'table' of rows
+strProduct = ""
+fltPrice = 0
+# lstOfProductObjects = []  # A list that acts as a 'table' of rows
 
 class Product:
     """Stores data about a product:
@@ -26,13 +28,14 @@ class Product:
 
         ALarkin,6.7.2022,Modified code to complete assignment 8
     """
+
     # TODO: Add Code to the Product class
 
     # -- Constructor --
     def __init__(self, product_name: str, product_price: float):
         # -- Attributes --
-        self.__product_name = str(product_name)
-        self.__product_price = float(product_price)
+        self.__product_name = product_name.strip().lower().title()
+        self.__product_price = product_price
 
     # -- Properties --
     # product_name
@@ -41,23 +44,17 @@ class Product:
         return str(self.__product_name)
 
     @product_name.setter
-    def product_name(self, value: str):
-        if str(value).isnumeric() == True:
-            self.__product_name = value
-        else:
-            raise Exception("Product names cannot be number!")
+    def product_name(self, value):
+        self.__product_name = value
 
     # product_price
     @property
     def product_price(self):
-        return float(self.__product_price)
+        return self.__product_price
 
     @product_price.setter
-    def product_price(self, value: float):
-        if str(value).isnumeric() == False:
-            self.__product_price = float(value)
-        else:
-            raise Exception("Price must be numbers!")
+    def product_price(self, value):
+        self.__product_price = float(value)
 
     # -- Methods --
     def to_string(self):
@@ -67,6 +64,7 @@ class Product:
     def __str__(self):
         """ Convert product data to string"""
         return self.product_name + ',' + str(self.product_price)
+
 
 # Data -------------------------------------------------------------------- #
 
@@ -82,7 +80,7 @@ class FileProcessor:
     changelog: (When,Who,What)
         RRoot,1.1.2030,Created Class
 
-        ALarkin,6.7.2022,Modified code to complete assignment 8
+        ALarkin,6.7.2022,Modified class to complete assignment 8
     """
 
     # TODO: Add Code to process data from a file
@@ -155,7 +153,7 @@ class IO:
     input_data()
 
     changelog: (When,Who,What)
-        ALarkin,6.7.2022,
+        ALarkin,6.7.2022,Modified class to complete assignment 8
     """
 
     # TODO: Add code to show menu to user
@@ -172,8 +170,9 @@ class IO:
         ****************************
         1) Show current data
         2) Add a product
-        3) Save data to file        
-        4) Exit program
+        3) Remove a product
+        4) Save data to file        
+        5) Exit program
         ****************************
         ''')
         print()  # Add an extra line for looks
@@ -186,8 +185,12 @@ class IO:
 
         :return: (str) choice
         """
-        choice = str(input("Choose an option? [1 to 4] - ")).strip()
-        print()  # Add an extra line for looks
+        choice = str(input("Choose an option? [1 to 5] - ")).strip()
+        if str(choice) not in ("1", "2", "3", "4", "5"):
+            print("******************************")
+            print(choice + " is not a valid option")
+            print("******************************")
+            print()  # Add an extra line for looks
         return choice
 
     # TODO: Add code to show the current data from the file to user
@@ -204,6 +207,7 @@ class IO:
             print(row.product_name + " (" + str(row.product_price) + ")")
         print("*******************************************")
         print()  # Add an extra line for looks
+        return
 
     # TODO: Add code to get product data from user
     @staticmethod
@@ -211,18 +215,59 @@ class IO:
         """
         Get user input data
 
-        :return: Product object with input data
+        :return: (str) product, (float) price
         """
         try:
-           product = str(input("Enter product name? - ").strip())
-           price = float(input("Enter product price? - ").strip())
-           print()  # Add an extra line for looks
-           p = Product(product_name=product, product_price=price)
+            product = str(input("Enter product name? - ").strip())
+            price = str(input("Enter product price? - ").strip())
+            print()  # Add an extra line for looks
+            if str(product).isnumeric():
+                product = ""
+                print("******************************")
+                print("Product must not be a number!")
+                print("******************************")
+            if not str(price).isnumeric():
+                price = 0
+                print("******************************")
+                print("Price must be a number!")
+                print("******************************")
+            return product, float(price)
         except Exception as e:
-           print(e)
-        return p
+            print("Invalid data entered:", e, sep='\n')
+        return
 
-        # Presentation (Input/Output)  -------------------------------------------- #
+    @staticmethod
+    def remove_data(lstOfProductObjects):
+        """
+        Remove data
+
+        :param lstOfProductObjects
+        :return: nothing
+        """
+        try:
+            strRemove = str(input("Enter a product to remove: ").strip().lower().title())
+            remove_bln = False  # verify that the data was found
+            for row in lstOfProductObjects:
+                if (row.product_name == strRemove):
+                    lstOfProductObjects.remove(row)
+                    remove_bln = True
+            if remove_bln == True:
+                print()  # Add an extra line for looks
+                print("****************************************")
+                print(strRemove + " removed from product list. ")
+                print("****************************************")
+            else:
+                print()  # Add an extra line for looks
+                print("******************************")
+                print(strRemove + " is not in product list. ")
+                print("******************************")
+        except Exception as e:
+            print()  # adding a new line for looks
+            print("Error Removing Data:", e, sep='\n')
+        return
+
+
+# Presentation (Input/Output)  -------------------------------------------- #
 
 # Main Body of Script  ---------------------------------------------------- #
 # TODO: Add Data Code to the Main body
@@ -240,15 +285,21 @@ while (True):
         IO.product_list(lstOfProductObjects)  # Show current data in the list/table
         continue
     # TODO: Let user add data to the list of product objects
-    if strChoice.strip() == '2':
-        lstOfProductObjects.append(IO.input_data())
+    elif strChoice.strip() == '2':
+        strProduct, fltPrice = IO.input_data()
+        if not (strProduct == "" or fltPrice == 0):
+            lstOfProductObjects.append(Product(product_name=strProduct, product_price=float(fltPrice)))
+        else:
+            continue
+    elif strChoice.strip() == '3':
+        IO.remove_data(lstOfProductObjects)
         continue
     # TODO: Let user save current data to file
-    elif strChoice == '3':
+    elif strChoice == '4':
         FileProcessor.save_data_to_file(strFileName, lstOfProductObjects)
         continue
     # TODO: Exit program
-    elif strChoice == '4':
+    elif strChoice == '5':
         break
 
 # Exit the program
